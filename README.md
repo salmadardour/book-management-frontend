@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Book Management System - Frontend
 
 ## Project Overview
