@@ -1,6 +1,11 @@
 # Book Management System
 
-A React-based frontend application for managing books, authors, categories, publishers, and reviews. This project was built as part of the 7SENG014W Web Application Development coursework.
+A React JS Frontend for managing books, authors, publishers, categories, and reviews.
+
+## Deployment
+
+This application is deployed to Netlify at: [https://cheery-speculoos-0974f7.netlify.app](https://cheery-speculoos-0974f7.netlify.app)
+(Your deployed Netlify URL)
 
 ## Features
 
@@ -30,73 +35,6 @@ This application can operate in two modes:
 2. **LocalStorage Mode**: Uses browser's localStorage for data persistence when the backend is unavailable
 
 You can toggle between these modes using the API Mode toggle in the application.
-
-## Project Structure
-
-```
-book-management-frontend/
-├── public/              # Public assets
-├── src/
-│   ├── components/      # Reusable UI components
-│   ├── pages/           # Page components
-│   ├── redux/
-│   │   ├── slices/      # Redux slices for each entity
-│   │   └── Store.js     # Redux store configuration
-│   ├── services/        # API services
-│   ├── hooks/           # Custom React hooks
-│   ├── App.js           # Main application component
-│   └── index.js         # Application entry point
-└── package.json         # Project dependencies
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v14 or later)
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/book-management-frontend.git
-   cd book-management-frontend
-   ```
-
-2. Install dependencies:
-   ```
-   npm install
-   ```
-
-3. Create `.env.development` file:
-   ```
-   REACT_APP_API_URL=http://localhost:5060/api
-   ```
-
-4. Start the development server:
-   ```
-   npm start
-   ```
-
-5. Open [http://localhost:3000](http://localhost:3000) to view the application in the browser.
-
-### Running with Backend
-
-To run with the backend API:
-1. Start the backend server (.NET Core API)
-2. Make sure the API URL in `.env.development` matches your backend URL
-3. In the application, make sure the API Mode toggle is set to "API Mode"
-
-### Running without Backend
-
-To run without the backend API:
-1. In the application, set the API Mode toggle to "LocalStorage Mode"
-2. The application will use the browser's localStorage for data persistence
-
-## Deployment
-
-This application is deployed to Netlify at: [your-netlify-url.netlify.app](https://your-netlify-url.netlify.app)
 
 ## Coursework Information
 
