@@ -1,41 +1,66 @@
-# Book Management Frontend
+# Book Management System
 
-This is a React-based frontend application for managing books, created for the 7SENG014W Web Application Development coursework.
-
-## Live Demo
-
-- GitHub Pages: [https://salmadardour.github.io/book-management-frontend](https://salmadardour.github.io/book-management-frontend)
-- Netlify: [Your-Netlify-URL-Here](Your-Netlify-URL-Here)
+A React-based frontend application for managing books, authors, categories, publishers, and reviews. This project was built as part of the 7SENG014W Web Application Development coursework.
 
 ## Features
 
-- User Authentication (Login/Register)
-- Book Management (CRUD operations)
-- Responsive design for mobile and desktop
-- State management with Redux
-- Client-side routing with React Router
+- **Book Management**: Add, view, edit, and delete books
+- **Author Management**: Add, view, and delete authors
+- **Category Management**: Add, view, and delete categories
+- **Publisher Management**: Add, view, and delete publishers
+- **Review Management**: Add, view, and delete reviews
+- **User Authentication**: Login, register, and protected routes
+- **Responsive Design**: Works on both mobile and desktop devices
+- **API/LocalStorage Fallback**: Works with or without a backend server
 
 ## Technologies Used
 
-- React 18
-- React Router 6
-- Redux Toolkit
-- React Bootstrap
-- Axios for API communication
-- Jest for testing
+- **React 18**: Modern JavaScript library for building user interfaces
+- **Redux Toolkit**: State management for React applications
+- **React Router 6**: Client-side routing for React applications
+- **React Bootstrap**: UI components library
+- **Axios**: HTTP client for making API requests
+- **JWT Authentication**: Token-based authentication
 
-## Project Setup
+## Dual-Mode Operation
+
+This application can operate in two modes:
+
+1. **API Mode**: Connects to a .NET Core backend API for data storage and retrieval
+2. **LocalStorage Mode**: Uses browser's localStorage for data persistence when the backend is unavailable
+
+You can toggle between these modes using the API Mode toggle in the application.
+
+## Project Structure
+
+```
+book-management-frontend/
+├── public/              # Public assets
+├── src/
+│   ├── components/      # Reusable UI components
+│   ├── pages/           # Page components
+│   ├── redux/
+│   │   ├── slices/      # Redux slices for each entity
+│   │   └── Store.js     # Redux store configuration
+│   ├── services/        # API services
+│   ├── hooks/           # Custom React hooks
+│   ├── App.js           # Main application component
+│   └── index.js         # Application entry point
+└── package.json         # Project dependencies
+```
+
+## Getting Started
 
 ### Prerequisites
 
-- Node.js (v16 or higher)
+- Node.js (v14 or later)
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
    ```
-   git clone https://github.com/salmadardour/book-management-frontend.git
+   git clone https://github.com/yourusername/book-management-frontend.git
    cd book-management-frontend
    ```
 
@@ -44,73 +69,43 @@ This is a React-based frontend application for managing books, created for the 7
    npm install
    ```
 
-3. Start the development server:
+3. Create `.env.development` file:
+   ```
+   REACT_APP_API_URL=http://localhost:5060/api
+   ```
+
+4. Start the development server:
    ```
    npm start
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+5. Open [http://localhost:3000](http://localhost:3000) to view the application in the browser.
 
-### Available Scripts
+### Running with Backend
 
-- `npm start` - Runs the app in development mode
-- `npm test` - Launches the test runner
-- `npm run build` - Builds the app for production
-- `npm run deploy` - Deploys to GitHub Pages
-- `npm run deploy:netlify` - Deploys to Netlify
+To run with the backend API:
+1. Start the backend server (.NET Core API)
+2. Make sure the API URL in `.env.development` matches your backend URL
+3. In the application, make sure the API Mode toggle is set to "API Mode"
 
-## Project Structure
+### Running without Backend
 
-```
-book-management-frontend/
-├── public/
-├── src/
-│   ├── components/        # Reusable UI components
-│   ├── pages/             # Page components
-│   ├── redux/             # Redux store, slices, and actions
-│   ├── services/          # API service functions
-│   ├── utils/             # Utility functions
-│   ├── App.js             # Main application component
-│   ├── index.js           # Entry point
-│   └── ...
-└── ...
-```
-
-## API Integration
-
-This frontend application consumes a .NET Core Backend API. The API endpoints used include:
-
-- Authentication: Register and login
-- Books: CRUD operations for book management
-
-## Testing
-
-Run the test suite with:
-
-```
-npm test
-```
+To run without the backend API:
+1. In the application, set the API Mode toggle to "LocalStorage Mode"
+2. The application will use the browser's localStorage for data persistence
 
 ## Deployment
 
-### GitHub Pages
+This application is deployed to Netlify at: [your-netlify-url.netlify.app](https://your-netlify-url.netlify.app)
 
-```
-npm run deploy
-```
+## Coursework Information
 
-### Netlify
-
-```
-npm run deploy:netlify
-```
-
-Or connect your GitHub repository to Netlify for automatic deployment.
+This project was developed as part of the 7SENG014W Web Application Development coursework at the University of Westminster.
 
 ## Author
 
-- Salma Dardour
+Salma Dardour
 
 ## License
 
-This project is part of a university coursework and is not licensed for public use.
+This project is available for academic purposes only.
