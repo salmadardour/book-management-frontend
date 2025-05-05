@@ -6,62 +6,38 @@ const PUBLISHER_URL = '/publishers';
 const publisherService = {
   // Get all publishers
   getPublishers: async () => {
-    try {
-      const response = await api.get(PUBLISHER_URL);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get(PUBLISHER_URL);
+    return response.data;
   },
   
   // Get a single publisher by ID
   getPublisherById: async (id) => {
-    try {
-      const response = await api.get(`${PUBLISHER_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get(`${PUBLISHER_URL}/${id}`);
+    return response.data;
   },
   
   // Create a new publisher
   createPublisher: async (publisherData) => {
-    try {
-      const response = await api.post(PUBLISHER_URL, publisherData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.post(PUBLISHER_URL, publisherData);
+    return response.data;
   },
   
   // Update an existing publisher
   updatePublisher: async (id, publisherData) => {
-    try {
-      const response = await api.put(`${PUBLISHER_URL}/${id}`, publisherData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.put(`${PUBLISHER_URL}/${id}`, publisherData);
+    return response.data;
   },
   
   // Delete a publisher
   deletePublisher: async (id) => {
-    try {
-      const response = await api.delete(`${PUBLISHER_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.delete(`${PUBLISHER_URL}/${id}`);
+    return response.data;
   },
   
   // Get books by publisher
   getBooksByPublisher: async (id) => {
-    try {
-      const response = await api.get(`${PUBLISHER_URL}/${id}/books`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get(`${PUBLISHER_URL}/${id}/books`);
+    return response.data;
   }
 };
 

@@ -6,52 +6,40 @@ const AUTH_URL = '/auth';
 const authService = {
   // Login user
   login: async (credentials) => {
-    try {
-      const response = await api.post(`${AUTH_URL}/login`, credentials);
+    const response = await api.post(`${AUTH_URL}/login`, credentials);
       
-      // Store user data and token in localStorage
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-      
-      if (response.data.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.refreshToken);
-      }
-      
-      if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
-      
-      return response.data;
-    } catch (error) {
-      throw error;
+    // Store user data and token in localStorage
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
     }
+    
+    if (response.data.refreshToken) {
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+    }
+    
+    if (response.data.user) {
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+    
+    return response.data;
   },
   
   // Register new user
   register: async (userData) => {
-    try {
-      const response = await api.post(`${AUTH_URL}/register`, userData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.post(`${AUTH_URL}/register`, userData);
+    return response.data;
   },
   
   // Get user profile
   getUserProfile: async () => {
-    try {
-      const response = await api.get(`${AUTH_URL}/profile`);
-      
-      // Update user data in localStorage
-      if (response.data) {
-        localStorage.setItem('user', JSON.stringify(response.data));
-      }
-      
-      return response.data;
-    } catch (error) {
-      throw error;
+    const response = await api.get(`${AUTH_URL}/profile`);
+    
+    // Update user data in localStorage
+    if (response.data) {
+      localStorage.setItem('user', JSON.stringify(response.data));
     }
+    
+    return response.data;
   },
   
   // Logout user
@@ -77,24 +65,17 @@ const authService = {
       throw new Error('No refresh token available');
     }
     
-    try {
-      const response = await api.post(`${AUTH_URL}/refresh-token`, { refreshToken });
-      
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-      
-      if (response.data.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.refreshToken);
-      }
-      
-      return response.data;
-    } catch (error) {
-      // If refresh fails, clear tokens
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      throw error;
+    const response = await api.post(`${AUTH_URL}/refresh-token`, { refreshToken });
+    
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
     }
+    
+    if (response.data.refreshToken) {
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+    }
+    
+    return response.data;
   },
   
   // Check if user is authenticated

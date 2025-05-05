@@ -53,7 +53,7 @@ function ReviewsPage() {
               <div>
                 <h3>{r.bookTitle}</h3>
                 <p className="review-stars">{renderStars(r.rating)}</p>
-                <p className="review-comment">"{r.comment}"</p>
+                <p className="review-comment">&quot;{r.comment}&quot;</p>
                 <p className="review-meta">
                   <strong>By:</strong> {r.reviewerName || 'Anonymous'} •{' '}
                   <strong>Date:</strong> {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : 'Unknown'}

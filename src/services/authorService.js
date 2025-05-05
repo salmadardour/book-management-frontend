@@ -6,62 +6,38 @@ const AUTHOR_URL = '/authors';
 const authorService = {
   // Get all authors with optional filter parameters
   getAuthors: async (params = {}) => {
-    try {
-      const response = await api.get(AUTHOR_URL, { params });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get(AUTHOR_URL, { params });
+    return response.data;
   },
   
   // Get a single author by ID
   getAuthorById: async (id) => {
-    try {
-      const response = await api.get(`${AUTHOR_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get(`${AUTHOR_URL}/${id}`);
+    return response.data;
   },
   
   // Create a new author
   createAuthor: async (authorData) => {
-    try {
-      const response = await api.post(AUTHOR_URL, authorData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.post(AUTHOR_URL, authorData);
+    return response.data;
   },
   
   // Update an existing author
   updateAuthor: async (id, authorData) => {
-    try {
-      const response = await api.put(`${AUTHOR_URL}/${id}`, authorData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.put(`${AUTHOR_URL}/${id}`, authorData);
+    return response.data;
   },
   
   // Delete an author
   deleteAuthor: async (id) => {
-    try {
-      const response = await api.delete(`${AUTHOR_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.delete(`${AUTHOR_URL}/${id}`);
+    return response.data;
   },
   
   // Get books by author
   getBooksByAuthor: async (id) => {
-    try {
-      const response = await api.get(`${AUTHOR_URL}/${id}/books`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get(`${AUTHOR_URL}/${id}/books`);
+    return response.data;
   }
 };
 

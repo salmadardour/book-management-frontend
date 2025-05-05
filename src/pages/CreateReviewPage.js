@@ -1,7 +1,40 @@
 import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './Form.css';
+
+// Create star rating component
+const StarRating = ({ rating, onRatingChange }) => {
+  const [hoverRating, setHoverRating] = useState(0);
+  
+  return (
+    <div style={{ display: 'flex', gap: '5px' }}>
+      {[1, 2, 3, 4, 5].map(star => (
+        <span
+          key={star}
+          style={{
+            cursor: 'pointer',
+            fontSize: '28px',
+            color: (hoverRating || rating) >= star ? '#ffbf00' : '#ccc',
+            transition: 'color 0.2s'
+          }}
+          onClick={() => onRatingChange(star.toString())}
+          onMouseEnter={() => setHoverRating(star)}
+          onMouseLeave={() => setHoverRating(0)}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+};
+
+// Add PropTypes for the StarRating component
+StarRating.propTypes = {
+  rating: PropTypes.number.isRequired,
+  onRatingChange: PropTypes.func.isRequired
+};
 
 function CreateReviewPage() {
   const [formData, setFormData] = useState({
@@ -116,32 +149,6 @@ function CreateReviewPage() {
     } finally {
       setSubmitLoading(false);
     }
-  };
-
-  // Create star rating component
-  const StarRating = ({ rating, onRatingChange }) => {
-    const [hoverRating, setHoverRating] = useState(0);
-    
-    return (
-      <div style={{ display: 'flex', gap: '5px' }}>
-        {[1, 2, 3, 4, 5].map(star => (
-          <span
-            key={star}
-            style={{
-              cursor: 'pointer',
-              fontSize: '28px',
-              color: (hoverRating || rating) >= star ? '#ffbf00' : '#ccc',
-              transition: 'color 0.2s'
-            }}
-            onClick={() => onRatingChange(star.toString())}
-            onMouseEnter={() => setHoverRating(star)}
-            onMouseLeave={() => setHoverRating(0)}
-          >
-            ★
-          </span>
-        ))}
-      </div>
-    );
   };
 
   if (loading) return (
