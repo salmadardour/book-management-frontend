@@ -1,19 +1,73 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { 
+  isUsingLocalStorage, 
+  getApiBaseUrl, 
+  localStorageData,
+  authenticatedRequest
+} from '../../services/apiHelper';
 
-const API_URL = 'https://localhost:5056/api/Review';
+// Sample reviews for localStorage mode
+const sampleReviews = [
+  {
+    id: 1,
+    bookId: 1,
+    userId: 2,
+    userName: 'user',
+    rating: 5,
+    comment: 'A masterpiece of American literature that tackles issues of race and injustice.',
+    createdAt: '2023-04-15T14:30:00Z'
+  },
+  {
+    id: 2,
+    bookId: 2,
+    userId: 2,
+    userName: 'user',
+    rating: 4,
+    comment: 'A chilling dystopian novel that remains relevant even today.',
+    createdAt: '2023-04-16T10:15:00Z'
+  },
+  {
+    id: 3,
+    bookId: 3,
+    userId: 1,
+    userName: 'admin',
+    rating: 4,
+    comment: 'Austen\'s wit and social commentary shine in this classic romance.',
+    createdAt: '2023-04-17T16:45:00Z'
+  },
+  {
+    id: 4,
+    bookId: 1,
+    userId: 1,
+    userName: 'admin',
+    rating: 5,
+    comment: 'Scout\'s narrative voice is authentic and compelling.',
+    createdAt: '2023-04-18T09:20:00Z'
+  }
+];
+
+// Get the appropriate API URL
+const API_URL = `${getApiBaseUrl()}/review`;
 
 // Async thunks for review operations
 export const fetchReviews = createAsyncThunk(
   'reviews/fetchReviews',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(API_URL);
-      return response.data;
+      // Check if we're using localStorage mode
+      if (isUsingLocalStorage()) {
+        return await localStorageData.getAll('reviews', sampleReviews);
+      } else {
+        // Real API call
+        const response = await axios.get(API_URL);
+        return response.data;
+      }
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 
         error.response?.data || 
+        error.message ||
         'Failed to fetch reviews'
       );
     }
@@ -24,12 +78,19 @@ export const fetchReviewById = createAsyncThunk(
   'reviews/fetchReviewById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/${id}`);
-      return response.data;
+      // Check if we're using localStorage mode
+      if (isUsingLocalStorage()) {
+        return await localStorageData.getById('reviews', id, sampleReviews);
+      } else {
+        // Real API call
+        const response = await axios.get(`${API_URL}/${id}`);
+        return response.data;
+      }
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 
         error.response?.data || 
+        error.message ||
         'Failed to fetch review'
       );
     }
@@ -40,12 +101,21 @@ export const fetchReviewsByBookId = createAsyncThunk(
   'reviews/fetchReviewsByBookId',
   async (bookId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/book/${bookId}`);
-      return response.data;
+      // Check if we're using localStorage mode
+      if (isUsingLocalStorage()) {
+        const allReviews = await localStorageData.getAll('reviews', sampleReviews);
+        const bookReviews = allReviews.filter(review => review.bookId === parseInt(bookId));
+        return bookReviews;
+      } else {
+        // Real API call
+        const response = await axios.get(`${API_URL}/book/${bookId}`);
+        return response.data;
+      }
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 
         error.response?.data || 
+        error.message ||
         'Failed to fetch reviews for this book'
       );
     }
@@ -56,18 +126,32 @@ export const createReview = createAsyncThunk(
   'reviews/createReview',
   async (reviewData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      // For reviews, we might allow non-authenticated users to create reviews
-      // depending on your API design
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      
-      const response = await axios.post(API_URL, reviewData, { headers });
-      return response.data;
+      // Check if we're using localStorage mode
+      if (isUsingLocalStorage()) {
+        // Add current date and username
+        const user = JSON.parse(localStorage.getItem('user')) || { id: 2, username: 'user' };
+        const reviewWithUserInfo = {
+          ...reviewData,
+          userId: user.id,
+          userName: user.username,
+          createdAt: new Date().toISOString()
+        };
+        
+        return await localStorageData.create('reviews', reviewWithUserInfo, sampleReviews);
+      } else {
+        // For reviews, we might allow non-authenticated users to create reviews
+        // depending on your API design
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        
+        const response = await axios.post(API_URL, reviewData, { headers });
+        return response.data;
+      }
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 
         error.response?.data || 
+        error.message ||
         'Failed to create review'
       );
     }
@@ -78,19 +162,18 @@ export const updateReview = createAsyncThunk(
   'reviews/updateReview',
   async ({ id, reviewData }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        return rejectWithValue('Authentication required');
+      // Check if we're using localStorage mode
+      if (isUsingLocalStorage()) {
+        return await localStorageData.update('reviews', id, reviewData, sampleReviews);
+      } else {
+        // Real API call
+        return await authenticatedRequest('put', `${API_URL}/${id}`, reviewData);
       }
-      
-      const response = await axios.put(`${API_URL}/${id}`, reviewData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 
         error.response?.data || 
+        error.message ||
         'Failed to update review'
       );
     }
@@ -101,19 +184,19 @@ export const deleteReview = createAsyncThunk(
   'reviews/deleteReview',
   async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        return rejectWithValue('Authentication required');
+      // Check if we're using localStorage mode
+      if (isUsingLocalStorage()) {
+        return await localStorageData.delete('reviews', id, sampleReviews);
+      } else {
+        // Real API call
+        await authenticatedRequest('delete', `${API_URL}/${id}`);
+        return id;
       }
-      
-      await axios.delete(`${API_URL}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      return id; // Return the id for filtering out the deleted review
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 
         error.response?.data || 
+        error.message ||
         'Failed to delete review'
       );
     }

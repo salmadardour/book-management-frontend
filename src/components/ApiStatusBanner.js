@@ -1,5 +1,3 @@
-// src/components/ApiStatusBanner.js
-
 import React from 'react';
 import { Alert, Container, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';

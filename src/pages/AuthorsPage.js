@@ -37,9 +37,9 @@ function AuthorsPage() {
   return (
     <div className="page-container">
       <h1>Authors</h1>
-      {isAuthenticated && (
+      <div className="top-actions">
         <Link to="/authors/create" className="add-button">+ Add Author</Link>
-      )}
+      </div>
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
@@ -52,13 +52,41 @@ function AuthorsPage() {
                 <h3>{author.name}</h3>
               </div>
               {isAuthenticated && (
-                <div className="list-actions"><button className="delete-button" onClick={() => handleDeleteClick(author)}>
-                  Delete
-                </button></div>
+                <div className="list-actions">
+                  <button className="delete-button" onClick={() => handleDeleteClick(author)}>
+                    Delete
+                  </button>
+                </div>
               )}
             </li>
           ))}
         </ul>
+      )}
+      
+      {/* Delete confirmation modal */}
+      {showDeleteModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete author "{authorToDelete?.name}"?</p>
+            <div className="modal-actions">
+              <button 
+                className="cancel-button" 
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </button>
+              <button 
+                className="delete-button" 
+                onClick={handleConfirmDelete}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

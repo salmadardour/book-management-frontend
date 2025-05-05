@@ -1,7 +1,41 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { 
+  isUsingLocalStorage, 
+  getApiBaseUrl, 
+  localStorageData,
+  simulateDelay
+} from '../../services/apiHelper';
 
-const API_URL = 'https://localhost:5056/api/auth';
+// Get the appropriate API URL
+const API_URL = `${getApiBaseUrl()}/auth`;
+
+// Sample users for localStorage mode
+const sampleUsers = [
+  {
+    id: 1,
+    username: 'admin',
+    email: 'admin@example.com',
+    password: 'Admin@123', // In a real app, passwords would be hashed
+    fullName: 'System Administrator',
+    role: 'Admin'
+  },
+  {
+    id: 2,
+    username: 'user',
+    email: 'user@example.com',
+    password: 'User@123',
+    fullName: 'Regular User',
+    role: 'User'
+  }
+];
+
+// Initialize localStorage with sample data if empty
+const initializeLocalStorage = () => {
+  if (!localStorage.getItem('users')) {
+    localStorage.setItem('users', JSON.stringify(sampleUsers));
+  }
+};
 
 // Helper to get cached user data
 const getUserFromStorage = () => {
@@ -21,21 +55,62 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/login`, credentials);
-      // Store tokens in localStorage
-      localStorage.setItem('token', response.data.token);
-      if (response.data.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.refreshToken);
+      // Check if we're using localStorage mode
+      if (isUsingLocalStorage()) {
+        initializeLocalStorage();
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        
+        const user = users.find(
+          u => u.username === credentials.username && u.password === credentials.password
+        );
+        
+        if (!user) {
+          return rejectWithValue('Invalid username or password');
+        }
+        
+        // Create mock tokens
+        const token = `mock-jwt-token-${Date.now()}`;
+        const refreshToken = `mock-refresh-token-${Date.now()}`;
+        
+        // Store tokens and user data
+        const userInfo = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          fullName: user.fullName,
+          role: user.role
+        };
+        
+        localStorage.setItem('user', JSON.stringify(userInfo));
+        localStorage.setItem('token', token);
+        localStorage.setItem('refreshToken', refreshToken);
+        
+        // Simulate network latency
+        await simulateDelay();
+        
+        return { token, refreshToken, user: userInfo };
+      } else {
+        // Real API login
+        const response = await axios.post(`${API_URL}/login`, credentials);
+        
+        // Store tokens in localStorage
+        localStorage.setItem('token', response.data.token);
+        if (response.data.refreshToken) {
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+        }
+        
+        // Store user data if available
+        if (response.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
+        
+        return response.data;
       }
-      // Store user data if available
-      if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
-      return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 
         error.response?.data || 
+        error.message ||
         'Login failed'
       );
     }
@@ -46,17 +121,76 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/register`, userData);
-      // After successful registration, store tokens
-      localStorage.setItem('token', response.data.token);
-      if (response.data.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.refreshToken);
+      // Check if we're using localStorage mode
+      if (isUsingLocalStorage()) {
+        initializeLocalStorage();
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        
+        // Check if username or email already exists
+        if (users.some(u => u.username === userData.username)) {
+          return rejectWithValue('Username already exists');
+        }
+        
+        if (users.some(u => u.email === userData.email)) {
+          return rejectWithValue('Email already exists');
+        }
+        
+        // Generate a new ID
+        const maxId = users.length > 0 ? Math.max(...users.map(u => u.id)) : 0;
+        
+        // Set default role to 'User'
+        const newUser = { 
+          ...userData, 
+          id: maxId + 1,
+          role: 'User'
+        };
+        
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Create tokens
+        const token = `mock-jwt-token-${Date.now()}`;
+        const refreshToken = `mock-refresh-token-${Date.now()}`;
+        
+        // Store auth data
+        const userInfo = {
+          id: newUser.id,
+          username: newUser.username,
+          email: newUser.email,
+          fullName: newUser.fullName,
+          role: newUser.role
+        };
+        
+        localStorage.setItem('user', JSON.stringify(userInfo));
+        localStorage.setItem('token', token);
+        localStorage.setItem('refreshToken', refreshToken);
+        
+        // Simulate network latency
+        await simulateDelay();
+        
+        return { token, refreshToken, user: userInfo };
+      } else {
+        // Real API registration
+        const response = await axios.post(`${API_URL}/register`, userData);
+        
+        // After successful registration, store tokens
+        localStorage.setItem('token', response.data.token);
+        if (response.data.refreshToken) {
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+        }
+        
+        // Store user data if available
+        if (response.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
+        
+        return response.data;
       }
-      return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 
         error.response?.data || 
+        error.message ||
         'Registration failed'
       );
     }
@@ -66,6 +200,20 @@ export const register = createAsyncThunk(
 export const fetchUserProfile = createAsyncThunk(
   'auth/fetchUserProfile',
   async (_, { rejectWithValue, getState }) => {
+    // Check if we're using localStorage mode
+    if (isUsingLocalStorage()) {
+      const user = getUserFromStorage();
+      if (!user) {
+        return rejectWithValue('No user found');
+      }
+      
+      // Simulate network latency
+      await simulateDelay();
+      
+      return user;
+    }
+    
+    // Regular API flow
     const token = localStorage.getItem('token');
     
     if (!token) {
@@ -118,6 +266,7 @@ export const fetchUserProfile = createAsyncThunk(
       return rejectWithValue(
         error.response?.data?.message || 
         error.response?.data || 
+        error.message ||
         'Failed to fetch user profile'
       );
     }
@@ -135,6 +284,19 @@ export const fetchUserProfile = createAsyncThunk(
 export const logout = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
+    // For localStorage mode, just clear the local data
+    if (isUsingLocalStorage()) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      
+      // Simulate network latency
+      await simulateDelay();
+      
+      return;
+    }
+    
+    // Regular API flow
     const token = localStorage.getItem('token');
     
     if (!token) {
@@ -171,6 +333,27 @@ export const logout = createAsyncThunk(
 export const refreshToken = createAsyncThunk(
   'auth/refreshToken',
   async (_, { rejectWithValue }) => {
+    // For localStorage mode, just generate new tokens
+    if (isUsingLocalStorage()) {
+      const user = getUserFromStorage();
+      if (!user) {
+        return rejectWithValue('No user found');
+      }
+      
+      // Create new tokens
+      const token = `mock-jwt-token-${Date.now()}`;
+      const refreshToken = `mock-refresh-token-${Date.now()}`;
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('refreshToken', refreshToken);
+      
+      // Simulate network latency
+      await simulateDelay();
+      
+      return { token, refreshToken, user };
+    }
+    
+    // Regular API flow
     const refreshToken = localStorage.getItem('refreshToken');
     
     if (!refreshToken) {
@@ -198,6 +381,7 @@ export const refreshToken = createAsyncThunk(
       return rejectWithValue(
         error.response?.data?.message || 
         error.response?.data || 
+        error.message ||
         'Token refresh failed'
       );
     }
@@ -227,6 +411,13 @@ const authSlice = createSlice({
         state.user = user;
       }
     },
+    // Toggle between localStorage mode and API mode
+    setApiMode: (state) => {
+      localStorage.removeItem('useLocalStorage');
+    },
+    setLocalStorageMode: (state) => {
+      localStorage.setItem('useLocalStorage', 'true');
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -320,6 +511,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, syncUserFromStorage } = authSlice.actions;
+export const { clearError, syncUserFromStorage, setApiMode, setLocalStorageMode } = authSlice.actions;
 
 export default authSlice.reducer;
