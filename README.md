@@ -5,7 +5,6 @@ A React JS Frontend for managing books, authors, publishers, categories, and rev
 ## Deployment
 
 This application is deployed to Netlify at: [https://cheery-speculoos-0974f7.netlify.app](https://cheery-speculoos-0974f7.netlify.app)
-(Your deployed Netlify URL)
 
 ## Features
 
