@@ -18,7 +18,7 @@
     "web-vitals": "^3.5.2"
   },
   "scripts": {
-    "start": "HOST=0.0.0.0 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --coverage",
     "test:watch": "react-scripts test",
@@ -28,7 +28,8 @@
     "lint:fix": "eslint src/**/*.{js,jsx} --fix && prettier --write src/**/*.{js,jsx,css,md}",
     "format": "prettier --write src/**/*.{js,jsx,css,md}",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "deploy:netlify": "netlify deploy --prod"
   },
   "eslintConfig": {
     "extends": [
