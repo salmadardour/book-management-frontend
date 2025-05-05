@@ -1,0 +1,31 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #fff8f0;
+    color: #dca293;
+    margin: 0;
+  }
+.sparkle-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(#da3559 1px, transparent 1px),
+      radial-gradient(#da3559 1px, transparent 1px);
+    background-position: 0 0, 25px 25px;
+    background-size: 50px 50px;
+    z-index: -1;
+    animation: sparkleMove 10s linear infinite;
+    opacity: 0.6;
+  }
+  
+  @keyframes sparkleMove {
+    0% {
+      background-position: 0 0, 25px 25px;
+    }
+    100% {
+      background-position: 50px 50px, 75px 75px;
+    }
+  }
+  

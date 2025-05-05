@@ -1,0 +1,62 @@
+.account-info {
+    padding: 15px 0;
+  }
+  
+  .account-field {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 15px;
+  }
+  
+  .account-field:last-child {
+    border-bottom: none;
+  }
+  
+  .account-field label {
+    display: block;
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 5px;
+    font-family: Helvetica, Arial, sans-serif;
+  }
+  
+  .account-field p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    font-family: Helvetica, Arial, sans-serif;
+  }
+  
+  .account-actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .account-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: Helvetica, Arial, sans-serif;
+  }
+  
+  .edit-button {
+    background-color: #ff66a3;
+    color: white;
+  }
+  
+  .edit-button:hover {
+    background-color: #e55b92;
+  }
+  
+  .logout-button {
+    background-color: #f8f8f8;
+    color: #666;
+  }
+  
+  .logout-button:hover {
+    background-color: #eee;
+  }
