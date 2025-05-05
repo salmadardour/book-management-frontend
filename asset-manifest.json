@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/book-management-frontend/static/css/main.5131c43d.css",
+    "main.js": "/book-management-frontend/static/js/main.ade92fb3.js",
+    "index.html": "/book-management-frontend/index.html",
+    "main.5131c43d.css.map": "/book-management-frontend/static/css/main.5131c43d.css.map",
+    "main.ade92fb3.js.map": "/book-management-frontend/static/js/main.ade92fb3.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.5131c43d.css",
+    "static/js/main.ade92fb3.js"
+  ]
+}
