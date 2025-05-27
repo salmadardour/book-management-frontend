@@ -1,119 +1,214 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Alert, Spinner } from 'react-bootstrap';
-import { fetchUserProfile, logout } from '../redux/slices/AuthSlice';
-import './Account.css';
+import axios from 'axios';
 
 function AccountPage() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  
-  // Get auth state from Redux
-  const { user, loading, error, isAuthenticated } = useSelector(state => state.auth);
-  
-  // Add state to track if profile fetch has been attempted
-  const [profileFetchAttempted, setProfileFetchAttempted] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // If not authenticated, redirect to login
-    if (!isAuthenticated) {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      // Not authenticated, redirect to login
       navigate('/login');
       return;
     }
-    
-    // Only fetch the profile once to avoid rate limiting
-    if (!profileFetchAttempted && !user) {
-      setProfileFetchAttempted(true);
-      dispatch(fetchUserProfile());
-    }
-  }, [dispatch, isAuthenticated, navigate, profileFetchAttempted, user]);
 
-  // Handle logout
+    setIsAuthenticated(true);
+
+    // Try to get user from localStorage first
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        setLoading(false);
+        console.log('User loaded from localStorage:', userData);
+        return;
+      } catch (err) {
+        console.log('Failed to parse stored user data');
+      }
+    }
+
+    // If no stored user, fetch from API
+    const fetchUserProfile = async () => {
+      try {
+        console.log('Fetching user profile from API...');
+        console.log('Token:', token);
+        
+        // Try multiple possible profile endpoints
+        const endpoints = [
+          'https://localhost:5056/api/auth/profile',
+          'https://localhost:5056/api/auth/user',
+          'https://localhost:5056/api/user',
+          'https://localhost:5056/api/Account/profile'
+        ];
+        
+        let response = null;
+        let successEndpoint = null;
+        
+        for (const endpoint of endpoints) {
+          try {
+            console.log(`Trying endpoint: ${endpoint}`);
+            response = await axios.get(endpoint, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            successEndpoint = endpoint;
+            console.log(`✅ Success with ${endpoint}:`, response.data);
+            break;
+          } catch (endpointErr) {
+            console.log(`❌ Failed ${endpoint}:`, endpointErr.response?.status, endpointErr.response?.data);
+          }
+        }
+        
+        if (response && response.data) {
+          setUser(response.data);
+          localStorage.setItem('user', JSON.stringify(response.data));
+          setLoading(false);
+          setError(`Profile loaded successfully from: ${successEndpoint}`);
+        } else {
+          throw new Error('All profile endpoints failed');
+        }
+        
+      } catch (err) {
+        console.error('Error fetching user profile:', err);
+        console.error('Error details:', {
+          status: err.response?.status,
+          statusText: err.response?.statusText,
+          data: err.response?.data,
+          headers: err.response?.headers
+        });
+        
+        if (err.response?.status === 401) {
+          // Token is invalid, clear storage and redirect to login
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          setError('Session expired. Please login again.');
+          setTimeout(() => navigate('/login'), 2000);
+        } else {
+          setError(`Failed to load user profile. Status: ${err.response?.status || 'Unknown'}, Message: ${err.response?.data?.message || err.message}`);
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [navigate]);
+
   const handleLogout = () => {
-    dispatch(logout());
+    // Clear all stored data
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    
+    console.log('User logged out');
     navigate('/login');
   };
 
-  // Render loading spinner
   if (loading) {
     return (
-      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      </Container>
+      <div className="page-container">
+        <h1>My Account</h1>
+        <p>Loading your account information...</p>
+      </div>
     );
   }
 
-  // Render error message
   if (error) {
     return (
-      <Container className="py-4">
-        <Alert variant="danger">
-          <Alert.Heading>Error</Alert.Heading>
-          <p>{error}</p>
-          <hr />
-          <div className="d-flex justify-content-end">
-            <Button onClick={() => navigate('/login')} variant="outline-danger">
-              Go to Login
-            </Button>
-          </div>
-        </Alert>
-      </Container>
+      <div className="page-container">
+        <h1>My Account</h1>
+        <p className="error-message">{error}</p>
+        <div className="account-actions">
+          <button onClick={() => navigate('/login')} className="view-button">
+            Go to Login
+          </button>
+        </div>
+      </div>
     );
   }
 
-  // Render user data
+  if (!user) {
+    return (
+      <div className="page-container">
+        <h1>My Account</h1>
+        <p className="error-message">No user information available.</p>
+        <div className="account-actions">
+          <button onClick={() => navigate('/login')} className="view-button">
+            Please Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Container className="py-4">
-      <h1 className="mb-4">My Account</h1>
+    <div className="page-container">
+      <h1>My Account</h1>
       
-      {user ? (
-        <Row>
-          <Col md={6} className="mb-4">
-            <Card>
-              <Card.Header as="h5">Account Information</Card.Header>
-              <Card.Body>
-                <Card.Title>{user.username || user.name || 'User'}</Card.Title>
-                <Card.Text>
-                  <strong>Email:</strong> {user.email}<br />
-                  {user.role && <><strong>Role:</strong> {user.role}<br /></>}
-                  {user.createdAt && (
-                    <><strong>Member since:</strong> {new Date(user.createdAt).toLocaleDateString()}<br /></>
-                  )}
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          
-          <Col md={6}>
-            <Card>
-              <Card.Header as="h5">Account Actions</Card.Header>
-              <Card.Body>
-                <div className="d-grid gap-2">
-                  <Button variant="primary" onClick={() => navigate('/books')}>
-                    View Books
-                  </Button>
-                  {user.role === 'admin' && (
-                    <Button variant="outline-primary" onClick={() => navigate('/books/create')}>
-                      Add New Book
-                    </Button>
-                  )}
-                  <Button variant="outline-secondary" onClick={handleLogout}>
-                    Logout
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      ) : (
-        <Alert variant="warning">
-          No user information available. Please <Alert.Link onClick={() => navigate('/login')}>login</Alert.Link> again.
-        </Alert>
-      )}
-    </Container>
+      <div className="account-info">
+        <div className="account-card">
+          <h2>Account Information</h2>
+          <div className="account-details">
+            <h3>{user.userName || user.username || user.name || 'User'}</h3>
+            <p><strong>Email:</strong> {user.email}</p>
+            {user.fullName && <p><strong>Full Name:</strong> {user.fullName}</p>}
+            {user.role && <p><strong>Role:</strong> {user.role}</p>}
+            {user.createdAt && (
+              <p><strong>Member since:</strong> {new Date(user.createdAt).toLocaleDateString()}</p>
+            )}
+          </div>
+        </div>
+        
+        <div className="account-card">
+          <h2>Account Actions</h2>
+          <div className="account-actions">
+            <button 
+              className="view-button" 
+              onClick={() => navigate('/books')}
+            >
+              View Books
+            </button>
+            
+            <button 
+              className="view-button" 
+              onClick={() => navigate('/authors')}
+            >
+              View Authors
+            </button>
+            
+            {(user.role === 'admin' || user.role === 'Admin') && (
+              <button 
+                className="view-button" 
+                onClick={() => navigate('/books/create')}
+              >
+                Add New Book
+              </button>
+            )}
+            
+            <button 
+              className="delete-button" 
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Debug info - you can remove this later */}
+      <details style={{ marginTop: '20px', fontSize: '12px' }}>
+        <summary>Debug: Raw user data</summary>
+        <pre style={{ background: '#f5f5f5', padding: '10px', overflow: 'auto' }}>
+          {JSON.stringify(user, null, 2)}
+        </pre>
+      </details>
+    </div>
   );
 }
 

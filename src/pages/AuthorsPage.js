@@ -1,20 +1,35 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchAuthors, deleteAuthor } from '../redux/slices/AuthorSlice';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 function AuthorsPage() {
-  const dispatch = useDispatch();
-  const { authors, loading, error } = useSelector(state => state.authors);
-  const { isAuthenticated } = useSelector(state => state.auth);
-
+  const [authors, setAuthors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [authorToDelete, setAuthorToDelete] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  
+  // Check if user is authenticated (simple check)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchAuthors());
-  }, [dispatch]);
+    // Check authentication
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+    
+    // Fetch authors
+    axios.get('https://localhost:5056/api/Author')
+      .then(res => {
+        setAuthors(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError('Failed to load authors.');
+        setLoading(false);
+        console.error('Error fetching authors:', err);
+      });
+  }, []);
 
   const handleDeleteClick = (author) => {
     setAuthorToDelete(author);
@@ -25,10 +40,15 @@ function AuthorsPage() {
     if (!authorToDelete) return;
     setDeleteLoading(true);
     try {
-      await dispatch(deleteAuthor(authorToDelete.id)).unwrap();
+      const token = localStorage.getItem('token');
+      await axios.delete(`https://localhost:5056/api/Author/${authorToDelete.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAuthors(prev => prev.filter(author => author.id !== authorToDelete.id));
       setShowDeleteModal(false);
     } catch (err) {
       console.error('Error deleting author:', err);
+      alert('Delete failed.');
     } finally {
       setDeleteLoading(false);
     }
@@ -40,6 +60,7 @@ function AuthorsPage() {
       <div className="top-actions">
         <Link to="/authors/create" className="add-button">+ Add Author</Link>
       </div>
+      
       {loading ? (
         <p>Loading...</p>
       ) : error ? (

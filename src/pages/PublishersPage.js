@@ -7,8 +7,16 @@ function PublishersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deleteStates, setDeleteStates] = useState({});
+  
+  // Check if user is authenticated
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Check authentication
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+    
+    // Fetch publishers
     axios.get('https://localhost:5056/api/Publisher')
       .then(res => {
         setPublishers(res.data);
@@ -23,7 +31,10 @@ function PublishersPage() {
   const handleDelete = async (id) => {
     setDeleteStates(prev => ({ ...prev, [id]: true }));
     try {
-      await axios.delete(`https://localhost:5056/api/Publisher/${id}`);
+      const token = localStorage.getItem('token');
+      await axios.delete(`https://localhost:5056/api/Publisher/${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       setPublishers(prev => prev.filter(p => p.id !== id));
     } catch {
       alert('Delete failed. Make sure this publisher has no books.');
@@ -51,15 +62,17 @@ function PublishersPage() {
                 <p className="book-category">📍 {p.address}</p>
                 <p className="book-author">📞 {p.contactNumber}</p>
               </div>
-              <div className="list-actions">
-                <button
-                  className="delete-button"
-                  onClick={() => handleDelete(p.id)}
-                  disabled={deleteStates[p.id]}
-                >
-                  {deleteStates[p.id] ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
+              {isAuthenticated && (
+                <div className="list-actions">
+                  <button
+                    className="delete-button"
+                    onClick={() => handleDelete(p.id)}
+                    disabled={deleteStates[p.id]}
+                  >
+                    {deleteStates[p.id] ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              )}
             </li>
           ))}
         </ul>

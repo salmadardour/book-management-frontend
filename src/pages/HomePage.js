@@ -1,28 +1,79 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchBooks } from '../redux/slices/BookSlice';
-import { fetchAuthors } from '../redux/slices/AuthorSlice';
-import { fetchCategories } from '../redux/slices/CategorySlice';
-import { fetchPublishers } from '../redux/slices/PublisherSlice';
+import axios from 'axios';
 import './HomePage.css';
 
 function HomePage() {
-  const dispatch = useDispatch();
-  const { books } = useSelector(state => state.books);
-  const { authors } = useSelector(state => state.authors);
-  const { categories } = useSelector(state => state.categories);
-  const { publishers } = useSelector(state => state.publishers);
-  
+  const [books, setBooks] = useState([]);
+  const [authors, setAuthors] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [publishers, setPublishers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    dispatch(fetchBooks());
-    dispatch(fetchAuthors());
-    dispatch(fetchCategories());
-    dispatch(fetchPublishers());
-  }, [dispatch]);
+    // Fetch all data simultaneously
+    const fetchAllData = async () => {
+      try {
+        const [booksRes, authorsRes, categoriesRes, publishersRes] = await Promise.allSettled([
+          axios.get('https://localhost:5056/api/Books'),
+          axios.get('https://localhost:5056/api/Author'),
+          axios.get('https://localhost:5056/api/Category'),
+          axios.get('https://localhost:5056/api/Publisher')
+        ]);
+
+        // Handle books
+        if (booksRes.status === 'fulfilled') {
+          setBooks(booksRes.value.data);
+          console.log('Books loaded:', booksRes.value.data.length);
+        } else {
+          console.error('Failed to load books:', booksRes.reason);
+        }
+
+        // Handle authors
+        if (authorsRes.status === 'fulfilled') {
+          setAuthors(authorsRes.value.data);
+          console.log('Authors loaded:', authorsRes.value.data.length);
+        } else {
+          console.error('Failed to load authors:', authorsRes.reason);
+        }
+
+        // Handle categories
+        if (categoriesRes.status === 'fulfilled') {
+          setCategories(categoriesRes.value.data);
+          console.log('Categories loaded:', categoriesRes.value.data.length);
+        } else {
+          console.error('Failed to load categories:', categoriesRes.reason);
+        }
+
+        // Handle publishers
+        if (publishersRes.status === 'fulfilled') {
+          setPublishers(publishersRes.value.data);
+          console.log('Publishers loaded:', publishersRes.value.data.length);
+        } else {
+          console.error('Failed to load publishers:', publishersRes.reason);
+        }
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllData();
+  }, []);
 
   // Get the featured books (latest 3)
   const featuredBooks = books.slice(0, 3);
+
+  if (loading) {
+    return (
+      <div className="home-page">
+        <h1>Loading...</h1>
+        <p>Fetching your library data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="home-page">
